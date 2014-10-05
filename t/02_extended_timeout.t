@@ -80,4 +80,42 @@ use Time::HiRes qw/sleep/;
     like $@, qr/^retry timeout: each/;
 }
 
+{
+    my $ret;
+    my $i = 0;
+    eval {
+        $ret = retryX(
+            times => 10,
+            delay => 2,
+            code => sub {
+                $i++;
+                die;
+            },
+            each_timeout => 1,
+            total_timeout => 1,
+        );
+    };
+    is $i, 1;
+    like $@, qr/^retry timeout: each/;
+}
+
+{
+    my $ret;
+    my $i = 0;
+    eval {
+        $ret = retryX(
+            times => 10,
+            delay => 2,
+            code => sub {
+                $i++;
+                die;
+            },
+            each_timeout => 5,
+            total_timeout => 1,
+        );
+    };
+    is $i, 1;
+    like $@, qr/^retry timeout: total/;
+}
+
 done_testing;
