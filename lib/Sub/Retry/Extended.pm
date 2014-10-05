@@ -57,6 +57,7 @@ sub retryX {
             _timeout($timeout, $lap);
         }
         sleep $delay if $times; # Do not sleep in last time
+        _timeout($timeout, $lap);
     }
     die $err if $err;
 }
@@ -66,12 +67,12 @@ sub _timeout {
 
     if ( $timeout->{each}
             && tv_interval($lap->{each}) > $timeout->{each} ) {
-        die 'retry timeout';
+        die 'retry timeout: each time';
     }
 
     if ( $timeout->{total}
             && tv_interval($lap->{start}) > $timeout->{total} ) {
-        die 'retry timeout';
+        die 'retry timeout: total time';
     }
 
     return;
