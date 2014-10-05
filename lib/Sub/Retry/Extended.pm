@@ -37,21 +37,24 @@ sub retryX {
         $lap->{each} = [gettimeofday];
         if (wantarray) {
             my @ret = eval { $code->($n) };
-            if ( _timeout($timeout, $lap) || !$retry_if->(@ret) ) {
+            unless ($retry_if->(@ret)) {
                 return @ret;
             }
+            _timeout($timeout, $lap);
         }
         elsif (not defined wantarray) {
             eval { $code->($n) };
-            if ( _timeout($timeout, $lap) || !$retry_if->() ) {
+            unless ($retry_if->()) {
                 return;
             }
+            _timeout($timeout, $lap);
         }
         else {
             my $ret = eval { $code->($n) };
-            if ( _timeout($timeout, $lap) || !$retry_if->($ret) ) {
+            unless ($retry_if->($ret)) {
                 return $ret;
             }
+            _timeout($timeout, $lap);
         }
         sleep $delay if $times; # Do not sleep in last time
     }
@@ -63,12 +66,12 @@ sub _timeout {
 
     if ( $timeout->{each}
             && tv_interval($lap->{each}) > $timeout->{each} ) {
-        return 1; # timeout!
+        die 'retry timeout';
     }
 
     if ( $timeout->{total}
             && tv_interval($lap->{start}) > $timeout->{total} ) {
-        return 1; # timeout!
+        die 'retry timeout';
     }
 
     return;
